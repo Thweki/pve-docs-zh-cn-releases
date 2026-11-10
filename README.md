@@ -4,7 +4,7 @@
 
 ## 下载版本
 
-请从 [Releases](https://github.com/Thweki/pve-docs-zh-cn-releases/releases) 下载已发布的文件。目标发行标签为 **`v9.2.13-zh.1`**，对应上游文档版本 **9.2.13**。
+请从 [Releases](https://github.com/Thweki/pve-docs-zh-cn-releases/releases) 下载已发布的文件。目标发行标签为 **`v9.2.13-zh.2`**，对应上游文档版本 **9.2.13**。
 
 | 文件格式 | 内容与用途 |
 | --- | --- |
