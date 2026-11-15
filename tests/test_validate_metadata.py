@@ -154,6 +154,30 @@ class MetadataTests(unittest.TestCase):
                 with self.assertRaisesRegex(validator.ValidationError, "version|disagree"):
                     validator.validate(self.root)
 
+    def test_version_delimiters_preserve_plain_text_equivalence(self):
+        documents = {
+            "README.md": "当前发行标签为 v9.2.13-zh.2；对应上游文档版本 9.2.13；Proxmox VE 9.2.13。",
+            "NOTICE.md": "发布版本为 9.2.13-zh.2；Proxmox VE 9.2.13。",
+        }
+        for delimiter in ("", "*", "**", "`", "**`", "`***`"):
+            with self.subTest(delimiter=delimiter):
+                # Include delimiters within declarations as well as around them.
+                decorated = {name: delimiter + delimiter.join(text) + delimiter
+                             for name, text in documents.items()}
+                validator.validate_versions(decorated)
+
+    def test_version_delimiter_removal_preserves_conflicts_and_boundaries(self):
+        documents = {name: (self.root / name).read_text(encoding="utf-8")
+                     for name in ("README.md", "NOTICE.md")}
+        for suffix in ("", "_", ".", "-extra", "中"):
+            with self.subTest(suffix=suffix):
+                changed = dict(documents)
+                version = "9.2.13-zh.2" + suffix if suffix else "9.2.13-zh.3"
+                changed["NOTICE.md"] = changed["NOTICE.md"].replace(
+                    "9.2.13-zh.2", "**`" + version + "`**")
+                with self.assertRaisesRegex(validator.ValidationError, "version"):
+                    validator.validate_versions(changed)
+
     def test_links_allow_directories_encoding_titles_and_fragments(self):
         (self.root / "with space.txt").touch()
         with (self.root / "README.md").open("a", encoding="utf-8") as output:
