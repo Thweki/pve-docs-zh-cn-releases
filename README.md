@@ -16,6 +16,21 @@
 
 在线阅读：[GitBook 完整中文文档](https://thweki.gitbook.io/pve-docs-zh-cn/)。
 
+### 发行附件预检（维护者）
+
+上传完成后，可将 GitHub Releases API 返回的单个发行对象保存为 JSON，再离线检查目标标签及五份必需附件。公开发行的示例：
+
+```sh
+curl --fail --silent --show-error \
+  https://api.github.com/repos/Thweki/pve-docs-zh-cn-releases/releases/tags/v9.2.13-zh.2 \
+  -o /tmp/pve-release.json
+python3 scripts/check_release_assets.py /tmp/pve-release.json --tag v9.2.13-zh.2
+```
+
+检查器仅需 Python 3 标准库，也接受通过已有授权方式取得的草稿发行 JSON。它要求对应版本的 EPUB、PDF、HTML ZIP、Source ZIP 和 `SHA256SUMS` 均已上传且大小大于零；缺失、同名重复、标签不符或上传未完成时返回非零状态。允许额外附件（如签名）。更新版本时请同步更换 URL 和 `--tag`。
+
+此命令只检查保存时的附件元数据，不下载附件、不发布发行，也不验证文件内容或 SHA256；仍需使用下载的 `SHA256SUMS` 校验实际文件。运行离线测试：`python3 -B -m unittest discover -s tests -p 'test_check_release_assets.py' -v`。
+
 ## 内容范围
 
 - 完整管理手册及附录，按原始 **29 个章节**组织；每章及其全部子节在同一页完整呈现。
