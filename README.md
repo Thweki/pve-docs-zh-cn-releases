@@ -47,3 +47,16 @@ python3 scripts/check_release_assets.py /tmp/pve-release.json --tag v9.2.13-zh.2
 API JavaScript 程序及构建程序的 AGPL、原始 AsciiDoc 脚本的 GPL、开放字体的 SIL OFL 许可分别保留；详情及对应源地址见 [NOTICE.md](NOTICE.md)、[LICENSES](LICENSES) 和 [字体许可及来源](export-assets/fonts)。本仓库保留声明和许可文件，字体程序、完整文档及可重建输入随正式下载归档提供。
 
 技术问题及翻译更正请提交到 [源码仓库 Issues](https://github.com/Thweki/pve-docs-zh-cn/issues)。
+
+## 元数据校验
+
+使用 Python 3.9 或更新版本，无需安装依赖：
+
+```sh
+python3 scripts/validate_metadata.py
+python3 -m unittest discover -s tests -v
+```
+
+校验字体来源清单的字段、固定提交与 SHA256 格式，两份本地 OFL 文件的字节数和哈希，README/NOTICE 的发行及上游版本，以及两份文档中行内 Markdown 链接的本地文件或目录目标（不检查锚点）。GitHub Actions 在检出后离线运行相同命令，不下载字体或安装依赖。
+
+四份字体二进制文件仅随发行归档提供，本校验不要求它们存在，也不核对其实际哈希。不检查远程链接、发行资产、源码归档内容或译文数量。根目录 GFDL 文本的完整性校验留待独立许可证修复后添加；本校验不修改或固定该文本。
