@@ -92,3 +92,28 @@ python3 scripts/verify_checksums.py /path/to/SHA256SUMS --directory /path/to/dow
 清单须为 UTF-8，支持 `sha256sum` 的“64 位十六进制摘要 + 两个空格 + 文件名”及“摘要 + 空格 + 星号 + 文件名”格式，允许空行、CRLF 换行和含空格的文件名。空清单、重复文件名及格式错误会在读取附件前被拒绝；仅支持同一目录中的普通附件文件，不接受路径、符号链接或需要反斜杠转义的文件名。
 
 仅检查清单列出的文件，忽略目录内额外文件；不检查发行附件是否齐全，也不验证来源真实性。请从可信来源取得对应发行的 `SHA256SUMS`。离线测试包含在上述 `unittest discover` 命令中。
+
+## 本地发行目录树
+
+下载附件或解压离线 HTML、源码归档后，可只读查看目录层级、每个普通文件的字节数及总大小。使用 Python 3.9 或更新版本，无需依赖或启用实验选项：
+
+```sh
+python3 scripts/release_tree.py /path/to/downloads
+# 可选：按块读取文件，同时显示每个普通文件的 SHA256
+python3 scripts/release_tree.py /path/to/extracted-html --sha256
+```
+
+输出示例（文件大小仅作演示）：
+
+```text
+'/path/to/downloads'/
+|-- 'Proxmox-VE-9.2.13-zh-CN.pdf' [1024 bytes]
+`-- 'html'/
+    `-- 'index.html' [512 bytes]
+
+2 files, 1 directories, 0 symlinks, 0 special entries; 1536 bytes
+```
+
+所有条目（含隐藏文件）按名称排序，文件名中的控制字符会转义。汇总不含根目录；大小为普通文件的逻辑字节数之和，不是磁盘占用量，硬链接的每个路径分别计数。默认只读取元数据，`--sha256` 才读取文件内容；不联网、不解压、不创建清单、不修改目录内容。
+
+符号链接和特殊文件只标注、不跟随或读取，根路径必须为实际目录。读取失败会标记 `ERROR`、继续列出其他条目，并将汇总标为 `incomplete`；退出码为 0 表示完成，1 表示失败或结果不完整，2 表示参数错误。请在下载或解压完成、目录不再变化时运行；结果不是原子快照。显示的哈希仅供查看，不会与 `SHA256SUMS` 比较，也不检查发行附件是否齐全。测试已包含在 `python3 -B -m unittest discover -s tests -v` 中。
