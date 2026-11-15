@@ -31,6 +31,22 @@ python3 scripts/check_release_assets.py /tmp/pve-release.json --tag v9.2.13-zh.2
 
 此命令只检查保存时的附件元数据，不下载附件、不发布发行，也不验证文件内容或 SHA256；仍需使用下载的 `SHA256SUMS` 校验实际文件。运行离线测试：`python3 -B -m unittest discover -s tests -p 'test_check_release_assets.py' -v`。
 
+### 本地发行归档清单
+
+需要长期保存一份发行下载目录时，可生成包含所有本地文件的清单，并在复制或恢复归档后核对目录是否完整。先将要归档的附件、`SHA256SUMS` 及可选签名等放入专用目录，再运行（Python 3.9 或更新版本，无需安装依赖或启用开关）：
+
+```sh
+python3 scripts/release_manifest.py create /path/to/release --tag v9.2.13-zh.2
+# 将整个目录（包括新生成的 RELEASE-MANIFEST.json）一起归档或复制
+python3 scripts/release_manifest.py verify /path/to/restored-release --tag v9.2.13-zh.2
+```
+
+`create` 在目录根部新建 `RELEASE-MANIFEST.json`，记录 `schema_version: 1`、`release_tag` 和按相对路径排序的 `files` 列表；每个文件条目包含 `path`、字节数 `bytes` 和小写 `sha256`。路径使用 `/` 分隔，覆盖子目录、隐藏文件、空文件及额外附件，仅排除根部清单自身。不记录时间戳或绝对路径，相同标签和文件内容生成相同清单；大文件分块读取。已有清单不会被覆盖；确需重新建立基准时，请先将旧清单移出归档目录。
+
+`verify` 要求标签（包括中文修订号）一致，并检查完整文件集合、大小及哈希。缺少文件、多出文件、内容改变或清单格式错误均返回状态码 `1` 并说明原因；成功返回 `0`，命令参数错误返回 `2`。符号链接及其他特殊文件会被拒绝；空目录、权限和文件时间不属于清单内容。创建和核对期间请勿修改目录。
+
+这是本地归档基准，不判断是否下载齐了发行必需附件，不解析或替代发行提供的 `SHA256SUMS`，也不证明来源真实性；请先完成下载校验，再保存清单。命令完全离线，不下载、解压或上传任何文件。运行专项测试：`python3 -B -m unittest discover -s tests -p 'test_release_manifest.py' -v`。
+
 ## 内容范围
 
 - 完整管理手册及附录，按原始 **29 个章节**组织；每章及其全部子节在同一页完整呈现。
