@@ -96,7 +96,7 @@ def one_version(text, pattern, label):
 
 def validate_versions(documents):
     # Ignore Markdown emphasis/code delimiters, while keeping the declarations explicit.
-    texts = {name: re.sub(r"[*`]", "", text) for name, text in documents.items()}
+    texts = {name: text.replace("*", "").replace("`", "") for name, text in documents.items()}
     releases = []
     upstreams = []
     for name, text in texts.items():
